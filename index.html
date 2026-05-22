@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>M.I.T.H.R.A - NEURAL INTERFACE</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Markdown & Sanitizer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+<!-- Syntax Highlighting (Synthwave 84 Theme for Cyberpunk feel) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/synthwave84.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+<style>
+    :root {
+        --bg-color: #03060a;
+        --container-bg: #050b12;
+        --neon-cyan-dim: rgba(79, 223, 255, 0.4);
+        --neon-cyan: #4fdfff;
+        --neon-cyan-glow: rgba(79, 223, 255, 0.8);
+        --neon-pink: #ff006e;
+        --text-main: #7be8ff;
+        --message-bot-bg: #04141c;
+        --message-user-bg: rgba(79, 223, 255, 0.12);
+        --border-color: #4fdfff;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--bg-color);
+        font-family: 'Courier Prime', monospace;
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* PREMIUM GRID BACKGROUND */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-image: 
+            linear-gradient(0deg, transparent 24%, rgba(79, 223, 255, 0.03) 25%, rgba(79, 223, 255, 0.03) 26%, transparent 27%, transparent 74%, rgba(79, 223, 255, 0.03) 75%, rgba(79, 223, 255, 0.03) 76%, transparent 77%, transparent),
+            linear-gradient(90deg, transparent 24%, rgba(79, 223, 255, 0.03) 25%, rgba(79, 223, 255, 0.03) 26%, transparent 27%, transparent 74%, rgba(79, 223, 255, 0.03) 75%, rgba(79, 223, 255, 0.03) 76%, transparent 77%, transparent);
+        background-size: 80px 80px;
+        pointer-events: none;
+        z-index: 1;
+        perspective: 1000px;
+        transform: rotateX(60deg) translateY(-100px) translateZ(-200px);
+        transform-origin: top;
+        animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+        from { background-position: 0 0; }
+        to { background-position: 0 80px; }
+    }
+
+    /* SCANLINE EFFECT */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+        background-size: 100% 4px;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .container {
+        width: 95%;
+        max-width: 1200px;
+        height: 90vh;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 0 30px rgba(79, 223, 255, 0.15), inset 0 0 15px rgba(79, 223, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        background: rgba(5, 11, 18, 0.85);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 10;
+        border-radius: 4px;
+    }
+
+    /* HEADER */
+    .header {
+        text-align: center;
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        background: linear-gradient(180deg, rgba(79, 223, 255, 0.1) 0%, transparent 100%);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        z-index: 2;
+    }
+
+    .header h1 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 38px;
+        letter-spacing: 8px;
+        margin: 0;
+        text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+        color: #fff;
+        animation: textPulse 4s infinite alternate;
+    }
+
+    @keyframes textPulse {
+        0% { text-shadow: 0 0 8px var(--neon-cyan); }
+        100% { text-shadow: 0 0 15px var(--neon-cyan), 0 0 25px var(--neon-cyan); }
+    }
+
+    .header p.subtitle {
+        margin-top: 8px;
+        font-size: 12px;
+        letter-spacing: 3px;
+        color: var(--neon-cyan);
+        opacity: 0.9;
+    }
+
+    .engine-status {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 11px;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #00ff00;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #00ff00;
+        animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    /* CHAT AREA */
+    .messages {
+        flex: 1;
+        padding: 25px 30px;
+        overflow-y: auto;
+        font-size: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        scroll-behavior: smooth;
+    }
+
+    .messages::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .messages::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.5);
+        border-left: 1px solid rgba(79, 223, 255, 0.2);
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+        background: var(--neon-cyan-dim);
+        border: 1px solid var(--neon-cyan);
+    }
+
+    .messages::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-cyan);
+    }
+
+    .message-group {
+        display: flex;
+        flex-direction: column;
+        animation: messageEnter 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+        max-width: 85%;
+    }
+
+    .message-group.user {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .message-group.bot {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    @keyframes messageEnter {
+        from { opacity: 0; transform: translateX(20px); filter: blur(5px); }
+        to { opacity: 1; transform: translateX(0); filter: blur(0); }
+    }
+
+    .bot-anim {
+        animation: messageEnterLeft 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
+    }
+
+    @keyframes messageEnterLeft {
+        from { opacity: 0; transform: translateX(-20px); filter: blur(5px); }
+        to { opacity: 1; transform: translateX(0); filter: blur(0); }
+    }
+
+
+    /* MESSAGE LABELS */
+    .message-label {
+        font-size: 11px;
+        margin-bottom: 8px;
+        color: var(--neon-pink);
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-family: 'Orbitron', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .message-group.user .message-label {
+        color: var(--neon-cyan);
+    }
+
+    .message-label::before {
+        content: '';
+        display: inline-block;
+        width: 12px;
+        height: 2px;
+        background: currentColor;
+    }
+
+    /* MESSAGE CONTENT */
+    .message-content {
+        padding: 18px 22px;
+        line-height: 1.6;
+        word-wrap: break-word;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        position: relative;
+    }
+
+    /* HUD Corner Effects */
+    .message-content::before, .message-content::after {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .message-group.bot .message-content::before {
+        top: -1px; left: -1px;
+        border-top-color: var(--neon-pink);
+        border-left-color: var(--neon-pink);
+    }
+    .message-group.bot .message-content::after {
+        bottom: -1px; right: -1px;
+        border-bottom-color: var(--neon-pink);
+        border-right-color: var(--neon-pink);
+    }
+    
+    .message-group.user .message-content::before {
+        top: -1px; right: -1px;
+        border-top-color: var(--neon-cyan);
+        border-right-color: var(--neon-cyan);
+    }
+    .message-group.user .message-content::after {
+        bottom: -1px; left: -1px;
+        border-bottom-color: var(--neon-cyan);
+        border-left-color: var(--neon-cyan);
+    }
+
+    .message-group.user .message-content {
+        background: var(--message-user-bg);
+        border-color: var(--neon-cyan-dim);
+        border-radius: 2px 2px 2px 15px;
+        color: #fff;
+    }
+
+    .message-group.bot .message-content {
+        background: var(--message-bot-bg);
+        border-color: rgba(255, 0, 110, 0.4);
+        border-radius: 2px 2px 15px 2px;
+        color: #e0fbfc;
+    }
+
+    /* ULTRA FAST LETTER POP WITH GLITCH */
+    @keyframes letterPopGlitch {
+        0% {
+            opacity: 0;
+            transform: translateY(15px) scale(0.4) skewX(-20deg);
+            text-shadow: none;
+        }
+        25% {
+            opacity: 1;
+            transform: translateY(0) scale(1) skewX(0deg);
+            text-shadow: 0 0 5px rgba(79, 223, 255, 0.3);
+        }
+        30% {
+            text-shadow: 
+                -4px 0 var(--neon-pink),
+                4px 0 var(--neon-cyan),
+                0 0 20px rgba(79, 223, 255, 1);
+            transform: translateY(-2px) skewX(10deg);
+        }
+        50% {
+            text-shadow: 
+                -3px 0 var(--neon-cyan),
+                3px 0 var(--neon-pink),
+                0 0 25px rgba(79, 223, 255, 1);
+            transform: translateY(1px) skewX(-8deg);
+        }
+        70% {
+            text-shadow: 
+                0 0 15px var(--neon-cyan),
+                0 0 30px rgba(79, 223, 255, 0.8);
+            transform: translateY(-1px) skewX(5deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1) skewX(0deg);
+            text-shadow: 0 0 5px rgba(79, 223, 255, 0.3);
+        }
+    }
+
+    .letter {
+        display: inline-block;
+        animation: letterPopGlitch 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* MARKDOWN STYLES */
+    .message-content p { margin-bottom: 12px; }
+    .message-content p:last-child { margin-bottom: 0; }
+    .message-content h1, .message-content h2, .message-content h3 {
+        font-family: 'Orbitron', sans-serif;
+        color: #fff;
+        margin: 20px 0 10px 0;
+        text-shadow: 0 0 5px var(--neon-cyan);
+        border-bottom: 1px solid var(--neon-cyan-dim);
+        padding-bottom: 5px;
+    }
+    .message-content h1 { font-size: 22px; }
+    .message-content h2 { font-size: 18px; }
+    .message-content h3 { font-size: 16px; }
+    
+    .message-content ul, .message-content ol {
+        margin-left: 20px;
+        margin-bottom: 15px;
+    }
+    .message-content li { margin-bottom: 5px; }
+    
+    .message-content a {
+        color: var(--neon-pink);
+        text-decoration: none;
+        border-bottom: 1px dashed var(--neon-pink);
+        transition: all 0.2s;
+    }
+    .message-content a:hover {
+        background: rgba(255, 0, 110, 0.2);
+        box-shadow: 0 0 8px var(--neon-pink);
+    }
+    
+    .message-content strong {
+        color: #fff;
+        text-shadow: 0 0 4px #fff;
+    }
+
+    .message-content blockquote {
+        border-left: 3px solid var(--neon-pink);
+        padding-left: 15px;
+        margin: 15px 0;
+        color: #a0c4c4;
+        background: rgba(255,0,110,0.05);
+        padding: 10px 15px;
+    }
+
+    /* CODE BLOCKS */
+    .message-content p > code, .message-content li > code {
+        background: rgba(0, 0, 0, 0.6);
+        color: var(--neon-pink);
+        padding: 3px 6px;
+        border-radius: 3px;
+        font-family: 'Courier Prime', monospace;
+        font-size: 14px;
+        border: 1px solid rgba(255,0,110,0.3);
+    }
+
+    .code-wrapper {
+        position: relative;
+        margin: 15px 0;
+        border: 1px solid var(--neon-cyan-dim);
+        border-radius: 4px;
+        background: #1e1e24; /* Base dark for synthwave */
+        overflow: hidden;
+    }
+
+    .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #14141a;
+        padding: 6px 12px;
+        border-bottom: 1px solid var(--neon-cyan-dim);
+        font-size: 11px;
+        font-family: 'Orbitron', sans-serif;
+        color: #a0a0a0;
+    }
+
+    .copy-btn {
+        background: transparent;
+        border: 1px solid var(--neon-cyan-dim);
+        color: var(--neon-cyan);
+        padding: 4px 10px;
+        cursor: pointer;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 10px;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        border-radius: 2px;
+    }
+
+    .copy-btn:hover {
+        background: rgba(79, 223, 255, 0.2);
+        box-shadow: 0 0 8px var(--neon-cyan);
+        color: #fff;
+    }
+
+    .code-wrapper pre {
+        margin: 0;
+        padding: 15px;
+        overflow-x: auto;
+    }
+    
+    .code-wrapper pre::-webkit-scrollbar { height: 8px; }
+    .code-wrapper pre::-webkit-scrollbar-track { background: #14141a; }
+    .code-wrapper pre::-webkit-scrollbar-thumb { background: var(--neon-cyan-dim); }
+
+    /* INPUT AREA */
+    .input-wrapper {
+        padding: 20px 30px;
+        background: #02080c;
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        z-index: 2;
+    }
+
+    .input-area {
+        display: flex;
+        gap: 15px;
+        position: relative;
+    }
+
+    .input-area textarea {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid var(--neon-cyan-dim);
+        color: #fff;
+        padding: 15px 20px;
+        font-family: 'Courier Prime', monospace;
+        font-size: 15px;
+        outline: none;
+        transition: all 0.3s ease;
+        resize: none;
+        min-height: 52px;
+        max-height: 200px;
+        border-radius: 2px;
+        line-height: 1.4;
+    }
+
+    .input-area textarea::placeholder {
+        color: var(--neon-cyan-dim);
+        font-style: italic;
+    }
+
+    .input-area textarea:focus {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px rgba(79, 223, 255, 0.3), inset 0 0 10px rgba(79, 223, 255, 0.1);
+    }
+
+    .input-area button {
+        background: #000;
+        border: 1px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        padding: 0 25px;
+        cursor: pointer;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 14px;
+        letter-spacing: 2px;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        font-weight: bold;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .input-area button::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(79,223,255,0.4), transparent);
+        transition: left 0.4s;
+    }
+
+    .input-area button:hover {
+        background: rgba(79, 223, 255, 0.1);
+        box-shadow: 0 0 15px var(--neon-cyan);
+        color: #fff;
+    }
+
+    .input-area button:hover::before {
+        left: 100%;
+    }
+
+    .input-area button:active {
+        transform: scale(0.97);
+    }
+
+    .input-area button:disabled {
+        border-color: #555;
+        color: #555;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .input-area button:disabled:hover {
+        background: #000;
+    }
+
+    /* LOADING INDICATOR */
+    .loading-container {
+        display: none;
+        padding: 5px 0;
+        align-self: flex-start;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .loading-text {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-pink);
+        font-size: 12px;
+        letter-spacing: 3px;
+        animation: pulseText 1.5s infinite;
+    }
+
+    .glitch-blocks {
+        display: flex;
+        gap: 4px;
+    }
+
+    .block {
+        width: 15px;
+        height: 6px;
+        background: var(--neon-pink);
+        animation: blockGlitch 1s infinite alternate;
+    }
+    .block:nth-child(2) { animation-delay: 0.2s; }
+    .block:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulseText {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    @keyframes blockGlitch {
+        0% { transform: scaleY(1); opacity: 1; }
+        50% { transform: scaleY(0.3); opacity: 0.5; }
+        100% { transform: scaleY(1.5); opacity: 1; }
+    }
+
+    /* SETTINGS AND VOICE BUTTONS */
+    .mic-btn {
+        background: #000;
+        border: 1px solid var(--neon-pink);
+        color: var(--neon-pink);
+        padding: 0 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.2s ease;
+        border-radius: 2px;
+    }
+    .mic-btn:hover {
+        background: rgba(255, 0, 110, 0.15);
+        box-shadow: 0 0 10px var(--neon-pink);
+    }
+    .mic-btn.listening {
+        background: var(--neon-pink);
+        color: #000;
+        box-shadow: 0 0 15px var(--neon-pink);
+        animation: pulseMic 1.5s infinite;
+    }
+    @keyframes pulseMic {
+        0% { transform: scale(1); box-shadow: 0 0 5px var(--neon-pink); }
+        50% { transform: scale(1.05); box-shadow: 0 0 20px var(--neon-pink); }
+        100% { transform: scale(1); box-shadow: 0 0 5px var(--neon-pink); }
+    }
+
+    .settings-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(79, 223, 255, 0.2);
+        flex-wrap: wrap;
+    }
+    .setting-item {
+        font-size: 11px;
+        color: var(--text-main);
+        cursor: pointer;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+    .setting-item:hover {
+        color: #fff;
+        text-shadow: 0 0 5px var(--text-main);
+    }
+    .setting-item.active {
+        color: #00ff00;
+        text-shadow: 0 0 5px #00ff00;
+    }
+
+    /* MODEL SELECTOR */
+    .model-selector-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .model-selector-wrapper .model-icon {
+        font-size: 13px;
+        color: var(--neon-cyan);
+        filter: drop-shadow(0 0 4px var(--neon-cyan));
+    }
+    .model-selector {
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid var(--neon-cyan-dim);
+        color: var(--neon-cyan);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 10px;
+        letter-spacing: 1px;
+        padding: 5px 28px 5px 10px;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border-radius: 2px;
+        min-width: 160px;
+    }
+    .model-selector:hover {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 12px rgba(79, 223, 255, 0.3), inset 0 0 8px rgba(79, 223, 255, 0.05);
+        color: #fff;
+    }
+    .model-selector:focus {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 15px rgba(79, 223, 255, 0.4), inset 0 0 10px rgba(79, 223, 255, 0.08);
+    }
+    .model-selector option {
+        background: #0a0e14;
+        color: var(--neon-cyan);
+        font-family: 'Courier Prime', monospace;
+        font-size: 12px;
+        padding: 8px;
+    }
+    /* Custom dropdown arrow */
+    .model-selector-inner {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .model-selector-inner::after {
+        content: '▾';
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neon-cyan);
+        font-size: 12px;
+        pointer-events: none;
+        filter: drop-shadow(0 0 3px var(--neon-cyan));
+    }
+    /* Refresh button */
+    .model-refresh-btn {
+        background: transparent;
+        border: 1px solid rgba(79, 223, 255, 0.2);
+        color: var(--neon-cyan-dim);
+        cursor: pointer;
+        font-size: 12px;
+        padding: 4px 7px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 2px;
+    }
+    .model-refresh-btn:hover {
+        border-color: var(--neon-cyan);
+        color: var(--neon-cyan);
+        box-shadow: 0 0 8px rgba(79, 223, 255, 0.3);
+        transform: rotate(90deg);
+    }
+    .model-refresh-btn.spinning {
+        animation: spinRefresh 0.6s linear;
+    }
+    @keyframes spinRefresh {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* STOP VOICE BUTTON */
+    .stop-voice-btn {
+        display: none;
+        font-size: 11px;
+        color: #ff4444;
+        cursor: pointer;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+        animation: stopPulse 1s infinite alternate;
+        border: 1px solid #ff4444;
+        padding: 3px 10px;
+        border-radius: 2px;
+        background: rgba(255, 68, 68, 0.1);
+    }
+    .stop-voice-btn:hover {
+        color: #fff;
+        background: rgba(255, 68, 68, 0.3);
+        box-shadow: 0 0 12px #ff4444;
+    }
+    .stop-voice-btn.visible {
+        display: flex;
+    }
+    @keyframes stopPulse {
+        0% { box-shadow: 0 0 4px rgba(255,68,68,0.3); }
+        100% { box-shadow: 0 0 12px rgba(255,68,68,0.7); }
+    }
+
+    /* VOICE MODE SELECTOR */
+    .voice-selector {
+        font-size: 11px;
+        cursor: pointer;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+        padding: 3px 10px;
+        border-radius: 2px;
+        border: 1px solid transparent;
+    }
+    .voice-selector.friday {
+        color: #ff79c6;
+        text-shadow: 0 0 5px rgba(255, 121, 198, 0.5);
+        border-color: rgba(255, 121, 198, 0.3);
+    }
+    .voice-selector.friday:hover {
+        background: rgba(255, 121, 198, 0.1);
+        box-shadow: 0 0 10px rgba(255, 121, 198, 0.4);
+    }
+    .voice-selector.jarvis {
+        color: #50fa7b;
+        text-shadow: 0 0 5px rgba(80, 250, 123, 0.5);
+        border-color: rgba(80, 250, 123, 0.3);
+    }
+    .voice-selector.jarvis:hover {
+        background: rgba(80, 250, 123, 0.1);
+        box-shadow: 0 0 10px rgba(80, 250, 123, 0.4);
+    }
+
+    /* =============================================
+       IRON MAN HUD — VOICE PROTOCOL MODE
+       ============================================= */
+    .voice-mode-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: radial-gradient(ellipse at center, #020a15 0%, #000305 100%);
+        z-index: 9999;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        overflow: hidden;
+    }
+    .voice-mode-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    /* HUD Background */
+    .hud-bg-grid {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-image:
+            radial-gradient(circle at 50% 50%, rgba(79,223,255,0.04) 0%, transparent 60%),
+            linear-gradient(0deg, transparent 49.5%, rgba(79,223,255,0.015) 50%, transparent 50.5%),
+            linear-gradient(90deg, transparent 49.5%, rgba(79,223,255,0.015) 50%, transparent 50.5%);
+        background-size: 100% 100%, 40px 40px, 40px 40px;
+        pointer-events: none;
+    }
+
+    /* Corner Brackets */
+    .hud-bracket { position: absolute; width: 50px; height: 50px; pointer-events: none; z-index: 5; }
+    .hud-bracket::before, .hud-bracket::after { content: ''; position: absolute; background: rgba(79,223,255,0.5); box-shadow: 0 0 6px rgba(79,223,255,0.4); }
+    .hud-bracket-tl { top: 15px; left: 15px; }
+    .hud-bracket-tl::before { top: 0; left: 0; width: 25px; height: 2px; }
+    .hud-bracket-tl::after  { top: 0; left: 0; width: 2px; height: 25px; }
+    .hud-bracket-tr { top: 15px; right: 15px; }
+    .hud-bracket-tr::before { top: 0; right: 0; width: 25px; height: 2px; }
+    .hud-bracket-tr::after  { top: 0; right: 0; width: 2px; height: 25px; }
+    .hud-bracket-bl { bottom: 15px; left: 15px; }
+    .hud-bracket-bl::before { bottom: 0; left: 0; width: 25px; height: 2px; }
+    .hud-bracket-bl::after  { bottom: 0; left: 0; width: 2px; height: 25px; }
+    .hud-bracket-br { bottom: 15px; right: 15px; }
+    .hud-bracket-br::before { bottom: 0; right: 0; width: 25px; height: 2px; }
+    .hud-bracket-br::after  { bottom: 0; right: 0; width: 2px; height: 25px; }
+
+    /* Top HUD Bar */
+    .hud-top-bar {
+        position: absolute; top: 0; left: 0; right: 0;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 18px 35px; z-index: 10;
+        border-bottom: 1px solid rgba(79,223,255,0.08);
+        background: linear-gradient(180deg, rgba(0,5,15,0.6) 0%, transparent 100%);
+    }
+    .hud-status {
+        font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 3px;
+        color: var(--neon-cyan); text-shadow: 0 0 8px var(--neon-cyan);
+        display: flex; align-items: center; gap: 10px;
+    }
+    .hud-status-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #00ff41; box-shadow: 0 0 10px #00ff41;
+        animation: blink 1.5s infinite;
+    }
+    .hud-model-select { display: flex; align-items: center; gap: 8px; }
+    .hud-model-select select {
+        background: rgba(0,10,20,0.8); border: 1px solid rgba(79,223,255,0.3);
+        color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;
+        font-size: 9px; letter-spacing: 1px; padding: 6px 12px;
+        cursor: pointer; outline: none; transition: all 0.3s ease;
+        text-transform: uppercase; appearance: none; -webkit-appearance: none; min-width: 160px;
+    }
+    .hud-model-select select:hover, .hud-model-select select:focus {
+        border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(79,223,255,0.3); color: #fff;
+    }
+    .hud-model-select select option { background: #050a12; color: var(--neon-cyan); font-family: 'Courier Prime', monospace; font-size: 12px; }
+    .hud-exit-btn {
+        font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 2px;
+        color: #ff3333; background: rgba(255,50,50,0.05);
+        border: 1px solid rgba(255,50,50,0.3); padding: 8px 20px;
+        cursor: pointer; transition: all 0.3s; text-transform: uppercase;
+    }
+    .hud-exit-btn:hover { background: rgba(255,50,50,0.2); box-shadow: 0 0 20px rgba(255,50,50,0.4); color: #fff; }
+
+    /* Central HUD Section */
+    .hud-center {
+        display: flex; align-items: center; justify-content: center;
+        gap: 50px; margin-bottom: 20px; position: relative; z-index: 5;
+    }
+
+    /* Data Panels */
+    .hud-panel {
+        width: 180px; background: rgba(5,15,25,0.5);
+        border: 1px solid rgba(79,223,255,0.15); padding: 14px 16px;
+        backdrop-filter: blur(5px); position: relative;
+    }
+    .hud-panel::before {
+        content: ''; position: absolute; top: -1px; left: -1px;
+        width: 14px; height: 14px; border-top: 2px solid var(--neon-cyan); border-left: 2px solid var(--neon-cyan);
+    }
+    .hud-panel::after {
+        content: ''; position: absolute; bottom: -1px; right: -1px;
+        width: 14px; height: 14px; border-bottom: 2px solid var(--neon-cyan); border-right: 2px solid var(--neon-cyan);
+    }
+    .hud-panel-header {
+        font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 2px;
+        color: var(--neon-cyan); margin-bottom: 10px; padding-bottom: 6px;
+        border-bottom: 1px solid rgba(79,223,255,0.15); text-shadow: 0 0 5px var(--neon-cyan);
+    }
+    .hud-panel-row {
+        font-family: 'Courier Prime', monospace; font-size: 11px;
+        color: rgba(79,223,255,0.6); margin-bottom: 5px;
+        display: flex; justify-content: space-between; gap: 6px;
+    }
+    .hud-panel-val { color: rgba(230,250,255,0.9); text-align: right; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 100px; }
+
+    /* Avatar HUD Ring System */
+    .hud-avatar-system {
+        position: relative; width: 280px; height: 280px;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .hud-ring {
+        position: absolute; border-radius: 50%;
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .hud-ring-1 { width: 320px; height: 320px; border: 2px dashed rgba(79,223,255,0.12); animation: hudRingSpin 25s linear infinite; }
+    .hud-ring-2 { width: 295px; height: 295px; border: 2px solid transparent; border-top: 2px solid rgba(79,223,255,0.5); border-right: 2px solid rgba(79,223,255,0.2); animation: hudRingSpin 10s linear infinite reverse; }
+    .hud-ring-3 { width: 268px; height: 268px; border: 1px solid rgba(79,223,255,0.2); box-shadow: 0 0 15px rgba(79,223,255,0.05), inset 0 0 15px rgba(79,223,255,0.03); transition: all 0.4s; }
+    .hud-ring-4 { width: 248px; height: 248px; border: 1px solid transparent; border-top: 1.5px solid rgba(79,223,255,0.4); border-left: 1.5px solid rgba(79,223,255,0.15); animation: hudRingSpin 7s linear infinite; }
+    .hud-ring-scan { width: 290px; height: 290px; background: conic-gradient(from 0deg, transparent 0%, transparent 80%, rgba(79,223,255,0.12) 92%, transparent 100%); animation: hudRingSpin 3s linear infinite; }
+    .hud-ring-dashed { width: 282px; height: 282px; border: 2px dashed rgba(79,223,255,0.25); border-radius: 50%; border-right-color: transparent; border-left-color: transparent; animation: hudRingSpin 12s linear infinite reverse; }
+    .hud-arc-spinner { width: 235px; height: 235px; border: 3px solid transparent; border-top: 3px solid rgba(79,223,255,0.6); border-bottom: 3px solid rgba(79,223,255,0.3); border-radius: 50%; opacity: 0.6; animation: hudRingSpin 4s linear infinite; }
+    @keyframes hudRingSpin {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Ring state animations */
+    .hud-avatar-system.speaking .hud-ring-3 { border-color: rgba(79,223,255,0.5); box-shadow: 0 0 30px rgba(79,223,255,0.2), inset 0 0 25px rgba(79,223,255,0.08); }
+    .hud-avatar-system.speaking .hud-ring-scan { background: conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(79,223,255,0.25) 90%, transparent 100%); }
+    .hud-avatar-system.user-speaking .hud-ring-3 { border-color: rgba(255,0,110,0.4); box-shadow: 0 0 30px rgba(255,0,110,0.15); }
+    .hud-avatar-system.user-speaking .hud-ring-2 { border-top-color: rgba(255,0,110,0.5); border-right-color: rgba(255,0,110,0.2); }
+    .hud-avatar-system.user-speaking .hud-ring-scan { background: conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(255,0,110,0.2) 90%, transparent 100%); }
+    .hud-avatar-system.processing .hud-ring-2 { animation-duration: 3s; }
+    .hud-avatar-system.processing .hud-ring-4 { animation-duration: 2s; }
+    .hud-avatar-system.processing .hud-ring-3 { border-color: rgba(79,223,255,0.35); animation: hudProcPulse 1.5s ease-in-out infinite; }
+    @keyframes hudProcPulse { 0%,100% { box-shadow: 0 0 15px rgba(79,223,255,0.05); } 50% { box-shadow: 0 0 30px rgba(79,223,255,0.2); } }
+
+    /* Avatar image */
+    .hud-avatar-img {
+        width: 200px; height: 200px; border-radius: 50%;
+        object-fit: cover; object-position: center top; position: relative; z-index: 3;
+        border: 2px solid rgba(79,223,255,0.35);
+        box-shadow: 0 0 25px rgba(79,223,255,0.15), inset 0 0 30px rgba(0,0,0,0.6);
+        filter: saturate(0.8) contrast(1.1); transition: all 0.4s ease;
+    }
+    .hud-avatar-system.speaking .hud-avatar-img { filter: saturate(1) contrast(1.15) brightness(1.1); border-color: rgba(79,223,255,0.6); box-shadow: 0 0 40px rgba(79,223,255,0.25); }
+    .hud-avatar-system.user-speaking .hud-avatar-img { border-color: rgba(255,0,110,0.5); box-shadow: 0 0 35px rgba(255,0,110,0.2); }
+
+    .hud-avatar-label { text-align: center; margin-top: 18px; }
+    .hud-avatar-name { font-family: 'Orbitron', sans-serif; font-size: 20px; letter-spacing: 6px; color: #fff; text-shadow: 0 0 12px var(--neon-cyan); }
+    .hud-avatar-sub { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 3px; color: var(--neon-cyan-dim); margin-top: 4px; }
+
+    /* Waveform */
+    .hud-waveform { display: flex; align-items: center; justify-content: center; gap: 3px; height: 45px; margin-bottom: 15px; z-index: 5; }
+    .hud-wave-bar { width: 3px; background: rgba(79,223,255,0.3); border-radius: 1px; height: 6px; transition: height 0.1s ease, background 0.3s ease; }
+    .hud-waveform.active .hud-wave-bar { background: var(--neon-cyan); box-shadow: 0 0 6px rgba(79,223,255,0.5); animation: hudWave 0.6s ease-in-out infinite alternate; }
+    .hud-waveform.user-active .hud-wave-bar { background: var(--neon-pink); box-shadow: 0 0 6px rgba(255,0,110,0.5); animation: hudWave 0.5s ease-in-out infinite alternate; }
+    .hud-wave-bar:nth-child(1)  { animation-delay: 0.00s; } .hud-wave-bar:nth-child(2)  { animation-delay: 0.04s; }
+    .hud-wave-bar:nth-child(3)  { animation-delay: 0.08s; } .hud-wave-bar:nth-child(4)  { animation-delay: 0.12s; }
+    .hud-wave-bar:nth-child(5)  { animation-delay: 0.16s; } .hud-wave-bar:nth-child(6)  { animation-delay: 0.20s; }
+    .hud-wave-bar:nth-child(7)  { animation-delay: 0.24s; } .hud-wave-bar:nth-child(8)  { animation-delay: 0.28s; }
+    .hud-wave-bar:nth-child(9)  { animation-delay: 0.32s; } .hud-wave-bar:nth-child(10) { animation-delay: 0.36s; }
+    .hud-wave-bar:nth-child(11) { animation-delay: 0.40s; } .hud-wave-bar:nth-child(12) { animation-delay: 0.44s; }
+    .hud-wave-bar:nth-child(13) { animation-delay: 0.40s; } .hud-wave-bar:nth-child(14) { animation-delay: 0.36s; }
+    .hud-wave-bar:nth-child(15) { animation-delay: 0.32s; } .hud-wave-bar:nth-child(16) { animation-delay: 0.28s; }
+    .hud-wave-bar:nth-child(17) { animation-delay: 0.24s; } .hud-wave-bar:nth-child(18) { animation-delay: 0.20s; }
+    .hud-wave-bar:nth-child(19) { animation-delay: 0.16s; } .hud-wave-bar:nth-child(20) { animation-delay: 0.12s; }
+    .hud-wave-bar:nth-child(21) { animation-delay: 0.08s; } .hud-wave-bar:nth-child(22) { animation-delay: 0.04s; }
+    .hud-wave-bar:nth-child(23) { animation-delay: 0.08s; } .hud-wave-bar:nth-child(24) { animation-delay: 0.12s; }
+    @keyframes hudWave { 0% { height: 4px; } 100% { height: 35px; } }
+
+    /* Subtitle Area */
+    .hud-subtitle-area { text-align: center; max-width: 700px; min-height: 70px; padding: 12px 30px; margin-bottom: 10px; z-index: 5; background: rgba(5,15,25,0.3); border: 1px solid rgba(79,223,255,0.08); border-radius: 2px; }
+    .hud-subtitle-label { font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 3px; color: var(--neon-cyan-dim); margin-bottom: 8px; transition: color 0.3s; }
+    .hud-subtitle-label.user-label { color: var(--neon-pink); }
+    .hud-subtitle-text { font-family: 'Courier Prime', monospace; font-size: 16px; color: #e0fbfc; line-height: 1.5; min-height: 24px; opacity: 0.9; }
+    .hud-subtitle-text .vm-interim { color: rgba(79,223,255,0.45); font-style: italic; }
+
+    /* Processing Indicator */
+    .hud-processing { display: none; font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 3px; color: var(--neon-cyan); animation: pulseText 1.5s infinite; margin-bottom: 10px; z-index: 5; }
+    .hud-processing.active { display: block; }
+
+    /* Bottom Controls */
+    .hud-controls { position: absolute; bottom: 35px; display: flex; align-items: center; gap: 18px; z-index: 10; }
+    .hud-voice-toggle {
+        font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px;
+        padding: 8px 14px; background: rgba(0,10,20,0.5);
+        border: 1px solid rgba(79,223,255,0.25); color: var(--neon-cyan);
+        cursor: pointer; transition: all 0.3s; text-transform: uppercase;
+    }
+    .hud-voice-toggle:hover { background: rgba(79,223,255,0.08); box-shadow: 0 0 10px rgba(79,223,255,0.25); }
+    .hud-mic-btn {
+        width: 65px; height: 65px; border-radius: 50%;
+        background: rgba(0,8,18,0.7); border: 2px solid var(--neon-cyan);
+        color: var(--neon-cyan); cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s ease; position: relative;
+        box-shadow: 0 0 15px rgba(79,223,255,0.1);
+    }
+    .hud-mic-btn::after {
+        content: ''; position: absolute; width: 100%; height: 100%;
+        border-radius: 50%; border: 1px solid rgba(79,223,255,0.15);
+        transform: scale(1.3); transition: all 0.3s;
+    }
+    .hud-mic-btn:hover { background: rgba(79,223,255,0.08); box-shadow: 0 0 25px rgba(79,223,255,0.25); }
+    .hud-mic-btn.active {
+        border-color: var(--neon-pink); color: #000;
+        background: var(--neon-pink); box-shadow: 0 0 30px var(--neon-pink);
+        animation: pulseMic 1.5s infinite;
+    }
+    .hud-mic-btn.active::after { border-color: rgba(255,0,110,0.3); animation: micRipple 1.5s ease-out infinite; }
+    @keyframes micRipple { 0% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+    .hud-mic-btn.disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+    .hud-stop-btn {
+        width: 45px; height: 45px; border-radius: 50%;
+        background: rgba(255,50,50,0.05); border: 1px solid rgba(255,50,50,0.35);
+        color: #ff4444; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s; font-size: 16px;
+    }
+    .hud-stop-btn:hover { background: rgba(255,50,50,0.2); box-shadow: 0 0 15px rgba(255,50,50,0.4); }
+
+    /* Entry Animations */
+    @keyframes hudElementEntry { 0% { opacity: 0; transform: translateY(25px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    .voice-mode-overlay.active .hud-center { animation: hudElementEntry 0.7s cubic-bezier(0.1,0.9,0.2,1) both; animation-delay: 0.2s; }
+    .voice-mode-overlay.active .hud-waveform { animation: hudElementEntry 0.5s cubic-bezier(0.1,0.9,0.2,1) both; animation-delay: 0.5s; }
+    .voice-mode-overlay.active .hud-controls { animation: hudElementEntry 0.5s cubic-bezier(0.1,0.9,0.2,1) both; animation-delay: 0.7s; }
+    .voice-mode-overlay.active .hud-top-bar { animation: hudElementEntry 0.4s cubic-bezier(0.1,0.9,0.2,1) both; animation-delay: 0.1s; }
+
+    @media (max-width: 900px) {
+        .hud-center { flex-direction: column; gap: 20px; }
+        .hud-panel { width: 260px; }
+    }
+
+</style>
+</head>
+
+
+
+
+<body>
+
+<!-- IRON MAN HUD — VOICE PROTOCOL OVERLAY -->
+<div class="voice-mode-overlay" id="voiceModeOverlay">
+    <!-- Background effects -->
+    <div class="hud-bg-grid"></div>
+
+    <!-- Corner targeting brackets -->
+    <div class="hud-bracket hud-bracket-tl"></div>
+    <div class="hud-bracket hud-bracket-tr"></div>
+    <div class="hud-bracket hud-bracket-bl"></div>
+    <div class="hud-bracket hud-bracket-br"></div>
+
+    <!-- Top HUD bar -->
+    <div class="hud-top-bar">
+        <div class="hud-status">
+            <div class="hud-status-dot"></div>
+            VOICE PROTOCOL // ACTIVE
+        </div>
+        <div class="hud-model-select">
+            <select id="vmModelSelector">
+                <option value="mistral">MISTRAL:LATEST</option>
+            </select>
+        </div>
+        <button class="hud-exit-btn" onclick="exitVoiceMode()">✕ TERMINATE</button>
+    </div>
+
+    <!-- Central HUD section -->
+    <div class="hud-center">
+        <!-- Left data panel -->
+        <div class="hud-panel hud-panel-left">
+            <div class="hud-panel-header">NEURAL ENGINE</div>
+            <div class="hud-panel-row">MODEL <span class="hud-panel-val" id="vmModelName">MISTRAL</span></div>
+            <div class="hud-panel-row">STATUS <span class="hud-panel-val" id="vmEngineStatus">ONLINE</span></div>
+            <div class="hud-panel-row">LATENCY <span class="hud-panel-val" id="vmLatency">--</span></div>
+            <div class="hud-panel-row">TOKENS <span class="hud-panel-val" id="vmTokenCount">0</span></div>
+        </div>
+
+        <!-- Avatar ring system -->
+        <div class="hud-avatar-section">
+            <div class="hud-avatar-system" id="vmAvatarContainer">
+                <div class="hud-ring hud-ring-1"></div>
+                <div class="hud-ring hud-ring-scan"></div>
+                <div class="hud-ring hud-ring-2"></div>
+                <div class="hud-ring hud-ring-3"></div>
+                <div class="hud-ring hud-ring-pattern"></div>
+                <div class="hud-ring hud-ring-4"></div>
+                <div class="hud-ring hud-ring-dashed"></div>
+                <div class="hud-ring hud-arc-spinner"></div>
+                <img src="/assets/avatar.png" alt="M.I.T.H.R.A" class="hud-avatar-img" id="vmAvatarImage">
+            </div>
+            <div class="hud-avatar-label">
+                <div class="hud-avatar-name">M.I.T.H.R.A</div>
+                <div class="hud-avatar-sub">NEURAL VOICE INTERFACE v3.0</div>
+            </div>
+        </div>
+
+        <!-- Right data panel -->
+        <div class="hud-panel hud-panel-right">
+            <div class="hud-conn"></div>
+            <div class="hud-panel-header">SYSTEM STATUS</div>
+            <div class="hud-panel-row">AUDIO <span class="hud-panel-val">ONLINE</span></div>
+            <div class="hud-panel-row">SPEECH <span class="hud-panel-val" id="vmSpeechStatus">READY</span></div>
+            <div class="hud-panel-row">VOICE <span class="hud-panel-val" id="vmVoiceInfo">FRIDAY</span></div>
+            <div class="hud-panel-row">LINK <span class="hud-panel-val" style="color:#00ff41">SECURE</span></div>
+        </div>
+    </div>
+
+    <!-- Waveform visualizer (24 bars) -->
+    <div class="hud-waveform" id="vmWaveform">
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+        <div class="hud-wave-bar"></div><div class="hud-wave-bar"></div><div class="hud-wave-bar"></div>
+    </div>
+
+    <!-- Subtitle area -->
+    <div class="hud-subtitle-area">
+        <div class="hud-subtitle-label" id="vmSubtitleLabel">M.I.T.H.R.A</div>
+        <div class="hud-subtitle-text" id="vmSubtitleText">Voice protocol initialized. Speak to begin...</div>
+    </div>
+
+    <div class="hud-processing" id="vmProcessing">PROCESSING NEURAL RESPONSE...</div>
+
+    <!-- Bottom controls -->
+    <div class="hud-controls">
+        <button class="hud-voice-toggle" id="vmVoiceToggle" onclick="cycleVoiceMode()">F.R.I.D.A.Y</button>
+        <button class="hud-mic-btn" id="vmMicBtn" onclick="vmToggleMic()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
+        <button class="hud-stop-btn" onclick="vmStopAudio()">■</button>
+    </div>
+</div>
+
+
+
+<div class="container">
+    <div class="header">
+        <h1>M.I.T.H.R.A</h1>
+        <p class="subtitle">MULTI INTELLIGENT THERAPEUTIC HYBRID REASONING ASSISTANT</p>
+        <div class="engine-status">
+            <div class="status-dot"></div>
+            <span id="engineStatusText">SYS.LINK ESTABLISHED // OLLAMA: LOADING... // SECURE CHL OPEN</span>
+        </div>
+        <div class="settings-bar">
+            <div class="setting-item active" id="toggleVoice" onclick="toggleVoice()">
+                [SOUND & TTS: ON]
+            </div>
+            <div class="model-selector-wrapper">
+                <span class="model-icon">⬡</span>
+                <div class="model-selector-inner">
+                    <select class="model-selector" id="modelSelector" title="Select AI Model">
+                        <option value="mistral">LOADING MODELS...</option>
+                    </select>
+                </div>
+                <button class="model-refresh-btn" id="modelRefreshBtn" onclick="refreshModels()" title="Refresh model list">⟳</button>
+            </div>
+            <div class="voice-selector friday" id="voiceSelector" onclick="cycleVoiceMode()">
+                [VOICE: F.R.I.D.A.Y]
+            </div>
+            <div class="stop-voice-btn" id="stopVoiceBtn" onclick="stopVoice()">
+                ■ STOP VOICE
+            </div>
+            <div class="setting-item" id="clearBtn" onclick="clearTerminal()">
+                [CLEAR TERMINAL]
+            </div>
+        </div>
+    </div>
+
+    <div id="messages" class="messages">
+        <!-- Messages will be injected here -->
+    </div>
+
+    <div class="input-wrapper">
+        <div class="loading-container" id="loadingIndicator">
+            <div class="loading-text">DECRYPTING INCOMING TRANSMISSION</div>
+            <div class="glitch-blocks">
+                <div class="block"></div>
+                <div class="block"></div>
+                <div class="block"></div>
+            </div>
+        </div>
+        <div class="input-area" style="margin-top: 10px;">
+            <button class="mic-btn" id="micBtn" onclick="toggleListening()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+            </button>
+            <textarea id="userInput" placeholder="> ENTER COMMAND (Shift+Enter for new line)..." rows="1"></textarea>
+            <button id="sendBtn" onclick="sendMessage()">TRANSMIT</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuration for Marked.js
+    marked.setOptions({
+        highlight: function(code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+        langPrefix: 'hljs language-',
+        breaks: true,
+        gfm: true
+    });
+
+    const messagesDiv = document.getElementById("messages");
+    const input = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const loadingIndicator = document.getElementById("loadingIndicator");
+    const micBtn = document.getElementById("micBtn");
+    const modelSelector = document.getElementById("modelSelector");
+    const engineStatusText = document.getElementById("engineStatusText");
+    const modelRefreshBtn = document.getElementById("modelRefreshBtn");
+    
+    let messagesHistory = [];
+    let voiceEnabled = true;
+    let isListening = false;
+    let wasSpoken = false;
+    let audioCtx = null;
+    let currentAudio = null;  // globally track the playing TTS audio
+    let voiceMode = 'friday'; // 'friday' or 'jarvis'
+    let currentModel = 'mistral'; // default model
+
+    // ─── MODEL SELECTOR ───
+    function formatModelSize(bytes) {
+        if (!bytes) return '';
+        const gb = bytes / (1024 * 1024 * 1024);
+        if (gb >= 1) return gb.toFixed(1) + ' GB';
+        const mb = bytes / (1024 * 1024);
+        return mb.toFixed(0) + ' MB';
+    }
+
+    async function fetchModels() {
+        try {
+            const response = await fetch('/api/models');
+            const data = await response.json();
+            if (data.models && data.models.length > 0) {
+                modelSelector.innerHTML = '';
+                const vmSelector = document.getElementById('vmModelSelector');
+                if (vmSelector) vmSelector.innerHTML = '';
+
+                data.models.forEach((model, index) => {
+                    const option = document.createElement('option');
+                    option.value = model.name;
+                    const sizeStr = formatModelSize(model.size);
+                    option.textContent = model.name.toUpperCase() + (sizeStr ? ' [' + sizeStr + ']' : '');
+                    modelSelector.appendChild(option);
+
+                    if (vmSelector) {
+                        const vmOption = document.createElement('option');
+                        vmOption.value = model.name;
+                        vmOption.textContent = model.name.toUpperCase();
+                        vmSelector.appendChild(vmOption);
+                    }
+                });
+                
+                // Try to keep current selection, else default to first
+                const options = Array.from(modelSelector.options).map(o => o.value);
+                if (options.includes(currentModel)) {
+                    modelSelector.value = currentModel;
+                    if (vmSelector) vmSelector.value = currentModel;
+                } else {
+                    modelSelector.value = options[0];
+                    if (vmSelector) vmSelector.value = options[0];
+                    currentModel = options[0];
+                }
+                updateEngineStatus();
+                if (document.getElementById('vmModelName')) {
+                    document.getElementById('vmModelName').textContent = currentModel.toUpperCase().substring(0, 10);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch models:', e);
+            modelSelector.innerHTML = '<option value="mistral">MISTRAL (FALLBACK)</option>';
+            const vmSelector = document.getElementById('vmModelSelector');
+            if (vmSelector) vmSelector.innerHTML = '<option value="mistral">MISTRAL (FALLBACK)</option>';
+            updateEngineStatus();
+        }
+    }
+
+    function updateEngineStatus() {
+        const displayName = currentModel.toUpperCase().replace(':', ' : ');
+        engineStatusText.textContent = 'SYS.LINK ESTABLISHED // NEURAL ENGINE: ' + displayName + ' // SECURE CHL OPEN';
+    }
+
+    modelSelector.addEventListener('change', function() {
+        currentModel = this.value;
+        updateEngineStatus();
+        playUIBeep(700, 'triangle', 0.04, 0.12);
+        // Notify user
+        addMessage('Neural engine switched to **' + currentModel + '**. All subsequent queries will be routed through this model.', 'bot');
+    });
+
+    async function refreshModels() {
+        modelRefreshBtn.classList.add('spinning');
+        await fetchModels();
+        setTimeout(() => modelRefreshBtn.classList.remove('spinning'), 600);
+        playUIBeep(800, 'sine', 0.03, 0.1);
+    }
+    
+    // Web Speech API Setup
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let stoppedByCode = false;   // guards against onend → sendMessage loop
+    let silenceTimer = null;     // auto-stop after silence
+    let autoSendTimer = null;    // delay before auto-sending so user can see the text
+    
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;        // continuous mode captures ongoing speech
+        recognition.interimResults = true;    // show real-time partial transcription
+        recognition.lang = 'en-US';
+        recognition.maxAlternatives = 1;
+
+        let originalValue = '';
+        let accumulatedFinal = '';   // accumulates final transcript segments
+
+        recognition.onstart = function() {
+            isListening = true;
+            stoppedByCode = false;
+            accumulatedFinal = '';
+            micBtn.classList.add("listening");
+            input.placeholder = "> 🎤 LISTENING... SPEAK NOW";
+            originalValue = input.value;
+            if (originalValue !== "" && !originalValue.endsWith(" ")) {
+                originalValue += " ";
+            }
+            wasSpoken = true;
+            // Safety: auto-stop after 60s to prevent mic staying open forever
+            clearTimeout(silenceTimer);
+            silenceTimer = setTimeout(() => {
+                if (isListening && recognition) {
+                    console.log("Speech timeout – auto-stopping mic");
+                    stoppedByCode = true;
+                    recognition.stop();
+                }
+            }, 60000);
+        };
+
+        recognition.onresult = function(event) {
+            // Reset silence auto-send timer on every result (user is still talking)
+            clearTimeout(autoSendTimer);
+
+            let finalText = '';
+            let interimText = '';
+            for (let i = 0; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalText += event.results[i][0].transcript;
+                } else {
+                    interimText += event.results[i][0].transcript;
+                }
+            }
+
+            // Update the textarea with the transcribed text in real time
+            const displayText = originalValue + finalText + interimText;
+            input.value = displayText;
+            input.style.height = 'auto';
+            input.style.height = (input.scrollHeight) + 'px';
+            input.focus();  // keep focus on textarea so user can see the text
+
+            // Store final text for auto-send logic
+            accumulatedFinal = finalText;
+
+            // If we got final text, start a 2-second silence timer to auto-stop & send
+            if (finalText.trim() !== '') {
+                autoSendTimer = setTimeout(() => {
+                    if (isListening && recognition) {
+                        console.log("Silence after speech – auto-stopping mic and sending");
+                        stoppedByCode = false;  // allow onend to auto-send
+                        recognition.stop();
+                    }
+                }, 2000);
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Speech Recognition Error:", event.error);
+            clearTimeout(silenceTimer);
+            clearTimeout(autoSendTimer);
+            // "no-speech" fires when user clicks mic but says nothing – not a real error
+            if (event.error === 'no-speech') {
+                // onend will fire next, let it handle cleanup
+                return;
+            }
+            if (event.error === 'aborted') {
+                // recognition was programmatically aborted, not an error
+                return;
+            }
+            isListening = false;
+            micBtn.classList.remove("listening");
+            input.placeholder = "> ENTER COMMAND (Shift+Enter for new line)...";
+        };
+
+        recognition.onend = function() {
+            clearTimeout(silenceTimer);
+            clearTimeout(autoSendTimer);
+            isListening = false;
+            micBtn.classList.remove("listening");
+            input.placeholder = "> ENTER COMMAND (Shift+Enter for new line)...";
+            
+            // Only auto-send if the mic stopped naturally (user finished talking),
+            // NOT when sendMessage() programmatically called recognition.stop()
+            if (!stoppedByCode && wasSpoken && input.value.trim() !== "" && !sendBtn.disabled) {
+                // Brief delay so the user can see the final transcription before it sends
+                setTimeout(() => {
+                    sendMessage();
+                }, 500);
+            }
+        };
+    } else {
+        micBtn.style.display = 'none';
+    }
+
+    function toggleListening() {
+        if (!recognition) return;
+        if (isListening) {
+            stoppedByCode = true;
+            recognition.stop();
+        } else {
+            try {
+                recognition.start();
+            } catch (e) {
+                // "already started" – can happen if clicked rapidly
+                console.warn("Recognition start error:", e);
+            }
+        }
+    }
+
+    function toggleVoice() {
+        voiceEnabled = !voiceEnabled;
+        const btn = document.getElementById("toggleVoice");
+        if (voiceEnabled) {
+            btn.classList.add("active");
+            btn.textContent = "[SOUND & TTS: ON]";
+            playUIBeep(800, 'sine', 0.05, 0.1);
+        } else {
+            btn.classList.remove("active");
+            btn.textContent = "[SOUND & TTS: OFF]";
+            playUIBeep(300, 'square', 0.05, 0.1);
+        }
+    }
+
+    function cycleVoiceMode() {
+        const selector = document.getElementById('voiceSelector');
+        if (voiceMode === 'friday') {
+            voiceMode = 'jarvis';
+            selector.className = 'voice-selector jarvis';
+            selector.textContent = '[VOICE: J.A.R.V.I.S]';
+            playUIBeep(500, 'triangle', 0.05, 0.15);
+        } else {
+            voiceMode = 'friday';
+            selector.className = 'voice-selector friday';
+            selector.textContent = '[VOICE: F.R.I.D.A.Y]';
+            playUIBeep(900, 'sine', 0.05, 0.15);
+        }
+        // Sync the voice mode overlay toggle button
+        if (typeof vmUpdateVoiceToggle === 'function') vmUpdateVoiceToggle();
+    }
+
+    function stopVoice() {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+        }
+        document.getElementById('stopVoiceBtn').classList.remove('visible');
+        playUIBeep(400, 'square', 0.03, 0.08);
+    }
+
+    function clearTerminal() {
+        messagesHistory = [];
+        messagesDiv.innerHTML = '';
+        addMessage("Terminal memory wiped. Link re-established.", "bot");
+        playUIBeep(500, 'triangle', 0.05, 0.2);
+    }
+    
+    // UI Beep Generator
+    function playUIBeep(frequency, type='square', volume=0.05, duration=0.1) {
+        if(!voiceEnabled) return;
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+        gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + duration);
+    }
+
+    // Auto-resize textarea
+    input.addEventListener('input', function() {
+        if (!isListening) wasSpoken = false;
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        if(this.value === '') {
+            this.style.height = '52px';
+        }
+    });
+
+    // Enter key to send message seamlessly
+    input.addEventListener("keydown", function(event) {
+        if(event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function showLoading() {
+        loadingIndicator.style.display = "flex";
+        sendBtn.disabled = true;
+    }
+
+    function hideLoading() {
+        loadingIndicator.style.display = "none";
+        sendBtn.disabled = false;
+        input.focus();
+    }
+
+    async function sendMessage() {
+        if (isListening && recognition) {
+            stoppedByCode = true;  // prevent onend from calling sendMessage again
+            recognition.stop();
+        }
+        
+        const text = input.value.trim();
+        if(text === "") return;
+
+        // ─── VOICE PROTOCOL ACTIVATION ───
+        if (text.toUpperCase() === 'INITIATE VOICE PROTOCOL') {
+            input.value = '';
+            input.style.height = '52px';
+            enterVoiceMode();
+            return;
+        }
+
+        const currentSpoken = wasSpoken;
+        wasSpoken = false; // Reset for next message
+
+        addMessage(text, "user");
+        messagesHistory.push({"role": "user", "content": text});
+        playUIBeep(1200, 'sine', 0.02, 0.05); // Input beep
+        
+        input.value = "";
+        input.style.height = '52px';
+        showLoading();
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: messagesHistory, use_tts: currentSpoken, voice_mode: voiceMode, model: currentModel })
+            });
+
+            const data = await response.json();
+            hideLoading();
+
+            if(data.response) {
+                addMessage(data.response, "bot");
+                messagesHistory.push({"role": "assistant", "content": data.response});
+                playUIBeep(600, 'sawtooth', 0.02, 0.1); // Receive beep
+                
+                // Keep history manageable (last 20 messages)
+                if (messagesHistory.length > 20) {
+                    messagesHistory = messagesHistory.slice(messagesHistory.length - 20);
+                }
+
+                // Play Audio Response if enabled
+                if (data.audio && voiceEnabled) {
+                    try {
+                        // Stop any currently playing audio first
+                        if (currentAudio) {
+                            currentAudio.pause();
+                            currentAudio = null;
+                        }
+                        const snd = new Audio('data:audio/mp3;base64,' + data.audio);
+                        currentAudio = snd;
+                        const stopBtn = document.getElementById('stopVoiceBtn');
+                        stopBtn.classList.add('visible');
+                        snd.addEventListener('ended', () => {
+                            currentAudio = null;
+                            stopBtn.classList.remove('visible');
+                        });
+                        snd.play();
+                    } catch(e) { console.error("Audio playback failed", e); }
+                }
+            } else {
+                addMessage("**SYSTEM ERROR:** No payload received from mainframe.", "bot");
+            }
+
+        } catch(error) {
+            hideLoading();
+            addMessage("**CRITICAL CONNECTION FAILURE.** Network offline.", "bot");
+        }
+    }
+
+    async function typeHtmlWithGlitch(htmlString, targetElement) {
+        targetElement.innerHTML = '';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+        
+        async function processNode(node, currentTarget) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.nodeValue;
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    if (char === '\n' || char === '\r' || char === '\t' || char === ' ') {
+                        currentTarget.appendChild(document.createTextNode(char));
+                    } else {
+                        const span = document.createElement("span");
+                        span.className = "letter";
+                        span.textContent = char;
+                        currentTarget.appendChild(span);
+                    }
+                    if (i % 3 === 0) {
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
+                    await new Promise(r => setTimeout(r, 6)); // super fast typing
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const clonedNode = node.cloneNode(false);
+                currentTarget.appendChild(clonedNode);
+                for (let child of node.childNodes) {
+                    await processNode(child, clonedNode);
+                }
+            }
+        }
+
+        for (let child of tempDiv.childNodes) {
+            await processNode(child, targetElement);
+        }
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function addMessage(text, sender) {
+        const group = document.createElement('div');
+        group.className = 'message-group ' + sender + (sender === 'bot' ? ' bot-anim' : '');
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'message-label';
+        labelDiv.textContent = sender === "user" ? 'OPERATOR' : 'M.I.T.H.R.A';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+
+        group.appendChild(labelDiv);
+        group.appendChild(content);
+        messagesDiv.appendChild(group);
+
+        if(sender === "bot") {
+            // Render Markdown
+            const rawHtml = marked.parse(text);
+            const cleanHtml = DOMPurify.sanitize(rawHtml);
+            
+            // Start the glitch typing effect
+            typeHtmlWithGlitch(cleanHtml, content).then(() => {
+                processCodeBlocks(content);
+                // Trigger Highlight.js on all newly typed code blocks
+                content.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            });
+        } else {
+            // Escape user input to prevent XSS manually, or just use textContent
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = text;
+            content.innerHTML = `<p>${tempDiv.innerHTML.replace(/\\n/g, '<br>')}</p>`;
+        }
+
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        // Ensure scrolling follows image/content load if any
+        setTimeout(() => {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }, 100);
+    }
+
+    function processCodeBlocks(container) {
+        const preElements = container.querySelectorAll('pre');
+        
+        preElements.forEach(pre => {
+            // Create wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-wrapper';
+            
+            // Extract language if present
+            const codeEl = pre.querySelector('code');
+            let lang = 'CODE';
+            if (codeEl && codeEl.className) {
+                const match = codeEl.className.match(/language-(\\w+)/);
+                if (match) lang = match[1].toUpperCase();
+            }
+
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'code-header';
+            
+            const langLabel = document.createElement('span');
+            langLabel.textContent = lang;
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'EXTRACT';
+            
+            copyBtn.addEventListener('click', () => {
+                const codeText = codeEl.innerText;
+                navigator.clipboard.writeText(codeText).then(() => {
+                    copyBtn.textContent = 'COPIED!';
+                    copyBtn.style.color = '#00ff00';
+                    setTimeout(() => {
+                        copyBtn.textContent = 'EXTRACT';
+                        copyBtn.style.color = '';
+                    }, 2000);
+                });
+            });
+
+            header.appendChild(langLabel);
+            header.appendChild(copyBtn);
+            
+            // Insert into DOM
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(header);
+            wrapper.appendChild(pre);
+        });
+    }
+
+    // Initial Welcome Message
+    window.onload = () => {
+        // Fetch available models on startup
+        fetchModels();
+        setTimeout(() => {
+            addMessage("Neural interface synchronized. Awaiting input... Type \"INITIATE VOICE PROTOCOL\" for full voice mode. Use the model selector above to switch engines.", "bot");
+        }, 800);
+    };
+
+    // ═══════════════════════════════════════════════════════
+    //  VOICE PROTOCOL MODE — FULL CONVERSATION ENGINE
+    // ═══════════════════════════════════════════════════════
+    let vmActive = false;
+    let vmRecognition = null;       // separate recognition instance for voice mode
+    let vmIsListening = false;
+    let vmCurrentAudio = null;
+    let vmSilenceTimer = null;
+    let vmAutoSendTimer = null;
+    let vmIsProcessing = false;
+
+    // DOM references for voice mode
+    const vmOverlay = document.getElementById('voiceModeOverlay');
+    const vmAvatarContainer = document.getElementById('vmAvatarContainer');
+    const vmWaveform = document.getElementById('vmWaveform');
+    const vmSubtitleLabel = document.getElementById('vmSubtitleLabel');
+    const vmSubtitleText = document.getElementById('vmSubtitleText');
+    const vmMicBtn = document.getElementById('vmMicBtn');
+    const vmProcessing = document.getElementById('vmProcessing');
+    const vmVoiceToggle = document.getElementById('vmVoiceToggle');
+
+    function enterVoiceMode() {
+        vmActive = true;
+        vmOverlay.style.display = 'flex';
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                vmOverlay.classList.add('active');
+            });
+        });
+        vmSubtitleText.textContent = 'Voice protocol initialized. Speak to begin...';
+        vmSubtitleLabel.textContent = 'M.I.T.H.R.A';
+        vmSubtitleLabel.classList.remove('user-label');
+        vmAvatarContainer.className = 'hud-avatar-system';
+        vmWaveform.className = 'hud-waveform';
+        vmUpdateVoiceToggle();
+        
+        // Sync HUD Data Panels
+        document.getElementById('vmModelName').textContent = currentModel.toUpperCase().substring(0, 10);
+        document.getElementById('vmModelSelector').value = currentModel;
+
+        playUIBeep(600, 'sine', 0.06, 0.2);
+        addMessage("Voice protocol activated. Switching to neural voice interface...", "bot");
+        setTimeout(() => { vmStartListening(); }, 1500);
+    }
+
+    function exitVoiceMode() {
+        vmActive = false;
+        vmStopListening();
+        vmStopAudio();
+        vmOverlay.classList.remove('active');
+        setTimeout(() => { vmOverlay.style.display = 'none'; }, 600);
+        playUIBeep(300, 'square', 0.05, 0.15);
+        addMessage("Voice protocol terminated. Returning to text interface.", "bot");
+    }
+
+    function vmUpdateVoiceToggle() {
+        if (vmVoiceToggle) {
+            vmVoiceToggle.textContent = voiceMode === 'friday' ? 'F.R.I.D.A.Y' : 'J.A.R.V.I.S';
+        }
+        document.getElementById('vmVoiceInfo').textContent = voiceMode === 'friday' ? 'FRIDAY' : 'JARVIS';
+    }
+
+    // ─── VOICE MODE SPEECH RECOGNITION ───
+    function vmSetupRecognition() {
+        if (!SpeechRecognition) return;
+        if (vmRecognition) return;
+
+        vmRecognition = new SpeechRecognition();
+        vmRecognition.continuous = true;
+        vmRecognition.interimResults = true;
+        vmRecognition.lang = 'en-US';
+        vmRecognition.maxAlternatives = 1;
+
+        vmRecognition.onstart = function() {
+            vmIsListening = true;
+            vmMicBtn.classList.add('active');
+            vmAvatarContainer.className = 'hud-avatar-system user-speaking';
+            vmWaveform.className = 'hud-waveform user-active';
+            vmSubtitleLabel.textContent = 'OPERATOR';
+            vmSubtitleLabel.classList.add('user-label');
+            vmSubtitleText.innerHTML = '<span class="vm-interim">Listening...</span>';
+            document.getElementById('vmSpeechStatus').textContent = 'LISTENING';
+            clearTimeout(vmSilenceTimer);
+            vmSilenceTimer = setTimeout(() => {
+                if (vmIsListening && vmRecognition) vmRecognition.stop();
+            }, 60000);
+        };
+
+        vmRecognition.onresult = function(event) {
+            clearTimeout(vmAutoSendTimer);
+            let finalText = '';
+            let interimText = '';
+            for (let i = 0; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
+                else interimText += event.results[i][0].transcript;
+            }
+            let display = '';
+            if (finalText) display += finalText;
+            if (interimText) display += '<span class="vm-interim">' + interimText + '</span>';
+            vmSubtitleText.innerHTML = display || '<span class="vm-interim">Listening...</span>';
+
+            if (finalText.trim() !== '') {
+                vmAutoSendTimer = setTimeout(() => {
+                    if (vmIsListening && vmRecognition) vmRecognition.stop();
+                }, 1500);
+            }
+        };
+
+        vmRecognition.onerror = function(event) {
+            clearTimeout(vmSilenceTimer);
+            clearTimeout(vmAutoSendTimer);
+            if (event.error === 'no-speech' || event.error === 'aborted') return;
+            vmIsListening = false;
+            vmMicBtn.classList.remove('active');
+            vmAvatarContainer.className = 'hud-avatar-system';
+            vmWaveform.className = 'hud-waveform';
+            document.getElementById('vmSpeechStatus').textContent = 'ERROR';
+        };
+
+        vmRecognition.onend = function() {
+            clearTimeout(vmSilenceTimer);
+            clearTimeout(vmAutoSendTimer);
+            vmIsListening = false;
+            vmMicBtn.classList.remove('active');
+            vmWaveform.className = 'hud-waveform';
+            document.getElementById('vmSpeechStatus').textContent = 'READY';
+
+            const spokenText = vmSubtitleText.textContent.trim();
+
+            if (spokenText && spokenText !== 'Listening...' && vmActive) {
+                if (spokenText.toUpperCase().includes('EXIT VOICE') || spokenText.toUpperCase().includes('TERMINATE PROTOCOL')) {
+                    exitVoiceMode();
+                    return;
+                }
+                vmSendMessage(spokenText);
+            } else {
+                vmAvatarContainer.className = 'hud-avatar-system';
+            }
+        };
+    }
+
+    function vmStartListening() {
+        if (!vmActive) return;
+        vmSetupRecognition();
+        if (!vmRecognition) return;
+        if (vmIsListening) return;
+        try { vmRecognition.start(); } catch(e) { }
+    }
+
+    function vmStopListening() {
+        if (vmRecognition && vmIsListening) {
+            try { vmRecognition.stop(); } catch(e) {}
+        }
+        vmIsListening = false;
+        vmMicBtn.classList.remove('active');
+    }
+
+    let vmAbortController = null;
+
+    function vmToggleMic() {
+        if (!vmActive) return;
+        if (vmIsProcessing) {
+            if (vmAbortController) vmAbortController.abort();
+            return;
+        }
+        if (vmIsListening) {
+            vmStopListening();
+            vmAvatarContainer.className = 'hud-avatar-system';
+            vmWaveform.className = 'hud-waveform';
+            vmSubtitleText.textContent = 'Microphone paused. Click mic to resume.';
+            document.getElementById('vmSpeechStatus').textContent = 'PAUSED';
+        } else {
+            vmStartListening();
+        }
+    }
+
+    function vmStopAudio() {
+        if (vmCurrentAudio) {
+            vmCurrentAudio.pause();
+            vmCurrentAudio.currentTime = 0;
+            vmCurrentAudio = null;
+        }
+        vmAvatarContainer.className = 'hud-avatar-system';
+        vmWaveform.className = 'hud-waveform';
+        vmSubtitleLabel.textContent = 'M.I.T.H.R.A';
+        vmSubtitleLabel.classList.remove('user-label');
+        if (vmActive) setTimeout(() => vmStartListening(), 500);
+    }
+
+    // Handle Model Selection Sync in Voice Mode
+    if (document.getElementById('vmModelSelector')) {
+        document.getElementById('vmModelSelector').addEventListener('change', (e) => {
+            currentModel = e.target.value;
+            if (document.getElementById('modelSelector')) {
+                document.getElementById('modelSelector').value = currentModel;
+            }
+            if (document.getElementById('vmModelName')) {
+                document.getElementById('vmModelName').textContent = currentModel.toUpperCase().substring(0, 10);
+            }
+        });
+    }
+
+    // Wrap the existing model selection functionality in checks
+    const mainModelSelector = document.getElementById('modelSelector');
+    if (mainModelSelector) {
+        mainModelSelector.addEventListener('change', (e) => {
+            const vmSelector = document.getElementById('vmModelSelector');
+            if (vmSelector) vmSelector.value = e.target.value;
+            const vmModelName = document.getElementById('vmModelName');
+            if (vmModelName) vmModelName.textContent = e.target.value.toUpperCase().substring(0, 10);
+        });
+    }
+
+    // ─── VOICE MODE MESSAGE SEND (STREAMING) ───
+    async function vmSendMessage(text) {
+        if(!text.trim() || text.trim().length < 2 || !vmActive || vmIsProcessing) return;
+        vmIsProcessing = true;
+        vmAvatarContainer.className = 'hud-avatar-system processing';
+        vmWaveform.className = 'hud-waveform';
+        vmSubtitleLabel.textContent = 'OPERATOR';
+        vmSubtitleLabel.classList.add('user-label');
+        vmSubtitleText.textContent = text;
+        vmProcessing.classList.add('active');
+        
+        vmAbortController = new AbortController();
+        document.getElementById('vmEngineStatus').textContent = 'COMPUTING';
+
+        messagesHistory.push({"role": "user", "content": text});
+        addMessage(text, 'user');
+        
+        let aiResponse = "";
+        vmSubtitleLabel.textContent = 'M.I.T.H.R.A';
+        vmSubtitleLabel.classList.remove('user-label');
+        vmSubtitleText.textContent = "";
+
+        let tokenCount = 0;
+        const startTime = Date.now();
+
+        let audioQueue = [];
+        let isPlaying = false;
+        let processedCleanLength = 0;
+        let sentenceSequenceIdx = 0; // Sequence ID to generate
+        let playSequenceIdx = 0;     // Sequence ID to play
+        let streamFinished = false;  // Tracks LLM stream
+        let activeTTSFetches = 0;    // Tracks network fetches
+
+        async function fetchChunkTTS(textChunk, seqIdx) {
+            activeTTSFetches++;
+            try {
+                const res = await fetch("/api/tts", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: textChunk, voice_mode: voiceMode })
+                });
+                const data = await res.json();
+                if (data.audio) {
+                    audioQueue.push({ base64: data.audio, text: textChunk, seq: seqIdx });
+                } else {
+                    audioQueue.push({ failed: true, text: textChunk, seq: seqIdx });
+                }
+            } catch (e) { 
+                console.error("Chunk TTS error", e);
+                audioQueue.push({ failed: true, text: textChunk, seq: seqIdx });
+            } finally {
+                activeTTSFetches--;
+                audioQueue.sort((a, b) => a.seq - b.seq);
+                playNextAudio();
+                checkIfFullyComplete();
+            }
+        }
+
+        function checkIfFullyComplete() {
+            if (streamFinished && activeTTSFetches === 0 && audioQueue.length === 0 && !isPlaying && !vmAbortController?.signal?.aborted) {
+                vmAvatarContainer.className = 'hud-avatar-system';
+                vmWaveform.className = 'hud-waveform';
+                document.getElementById('vmEngineStatus').textContent = 'ONLINE';
+                vmIsProcessing = false;
+                if (vmActive) setTimeout(() => vmStartListening(), 800);
+            }
+        }
+
+        function playNextAudio() {
+            if (isPlaying || audioQueue.length === 0 || !vmActive) return;
+            
+            if (audioQueue[0].seq !== playSequenceIdx) {
+                return;
+            }
+
+            isPlaying = true;
+            const nextChunk = audioQueue.shift();
+            playSequenceIdx++;
+            
+            if (nextChunk.failed) {
+                vmSubtitleText.textContent = nextChunk.text.trim();
+                isPlaying = false;
+                setTimeout(() => {
+                    playNextAudio();
+                    checkIfFullyComplete();
+                }, 1500); // Briefly show text before skipping to next audio node
+                return;
+            }
+
+            vmAvatarContainer.className = 'hud-avatar-system speaking';
+            vmWaveform.className = 'hud-waveform active';
+            vmSubtitleText.textContent = nextChunk.text.trim();
+            document.getElementById('vmEngineStatus').textContent = 'VOCODER';
+            
+            if (vmCurrentAudio) { vmCurrentAudio.pause(); }
+            const snd = new Audio('data:audio/mp3;base64,' + nextChunk.base64);
+            vmCurrentAudio = snd;
+            
+            snd.addEventListener('ended', () => {
+                vmCurrentAudio = null;
+                isPlaying = false;
+                if (audioQueue.length > 0) {
+                    playNextAudio();
+                } else {
+                    checkIfFullyComplete();
+                }
+            });
+            
+            snd.addEventListener('error', () => {
+                isPlaying = false;
+                playNextAudio();
+                checkIfFullyComplete();
+            });
+            
+            snd.play().catch(e => {
+                console.error("Audio playback error:", e);
+                isPlaying = false;
+                if (e.name === 'NotAllowedError') {
+                    vmSubtitleText.textContent = '(Audio blocked by browser. Click anywhere to resume.)';
+                    const unlockAudio = () => {
+                        document.removeEventListener('click', unlockAudio);
+                        vmIsProcessing = false;
+                        if (vmActive) vmStartListening();
+                    };
+                    document.addEventListener('click', unlockAudio);
+                } else {
+                    setTimeout(() => {
+                        playNextAudio();
+                        checkIfFullyComplete();
+                    }, 1000);
+                }
+            });
+        }
+
+        try {
+            const response = await fetch("/api/chat/stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: messagesHistory, model: currentModel }),
+                signal: vmAbortController.signal
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            while(true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.substring(6);
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.error) break;
+
+                            if (data.token) {
+                                aiResponse += data.token;
+                                tokenCount++;
+                                
+                                document.getElementById('vmTokenCount').textContent = tokenCount;
+                                document.getElementById('vmLatency').textContent = (Date.now() - startTime) + 'ms';
+
+                                if (!isPlaying && audioQueue.length === 0) {
+                                    const dots = ".".repeat(Math.floor(tokenCount / 4) % 4);
+                                    vmSubtitleText.textContent = "Processing " + dots;
+                                }
+
+                                let cleanTemp = aiResponse.replace(/<think>[\s\S]*?(?:<\/think>|$)/g, '').replace(/[\*#`]/g, '');
+                                while (cleanTemp.length > processedCleanLength) {
+                                    let unprocessed = cleanTemp.substring(processedCleanLength);
+                                    let match = unprocessed.match(/^([\s\S]*?[.!?\n]+(?:\s|$))/);
+                                    if (match) {
+                                        let sentence = match[1];
+                                        processedCleanLength += sentence.length;
+                                        if (sentence.trim().length > 0) {
+                                            fetchChunkTTS(sentence.trim(), sentenceSequenceIdx++);
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+            
+            vmProcessing.classList.remove('active');
+            
+            if (aiResponse) {
+                messagesHistory.push({"role": "assistant", "content": aiResponse});
+                addMessage(aiResponse, 'bot');
+                if (messagesHistory.length > 20) messagesHistory = messagesHistory.slice(messagesHistory.length - 20);
+
+                let cleanFinal = aiResponse.replace(/<think>[\s\S]*?(?:<\/think>|$)/g, '').replace(/[\*#`]/g, '');
+                let remainder = cleanFinal.substring(processedCleanLength).trim();
+                if (remainder) {
+                    fetchChunkTTS(remainder, sentenceSequenceIdx++);
+                }
+
+                streamFinished = true;
+                checkIfFullyComplete();
+            } else {
+                vmSubtitleText.textContent = 'Error: No response received.';
+                document.getElementById('vmEngineStatus').textContent = 'ERROR';
+                vmIsProcessing = false;
+                vmMicBtn.classList.remove('disabled');
+                if (vmActive) setTimeout(() => vmStartListening(), 2000);
+            }
+        } catch(error) {
+            audioQueue = []; // Instantly drop any loaded sequences
+            if (vmCurrentAudio) { vmCurrentAudio.pause(); vmCurrentAudio = null; }
+            isPlaying = false;
+            vmProcessing.classList.remove('active');
+            vmIsProcessing = false;
+
+            if (error.name === 'AbortError') {
+                vmSubtitleText.textContent = '(Neural link interrupted)';
+                document.getElementById('vmEngineStatus').textContent = 'ONLINE';
+                vmAvatarContainer.className = 'hud-avatar-system';
+                vmWaveform.className = 'hud-waveform';
+                if (vmActive) setTimeout(() => vmStartListening(), 800);
+            } else {
+                console.error(error);
+                vmSubtitleText.textContent = 'Connection error. Retrying...';
+                document.getElementById('vmEngineStatus').textContent = 'ERROR';
+                if (vmActive) setTimeout(() => vmStartListening(), 2000);
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
